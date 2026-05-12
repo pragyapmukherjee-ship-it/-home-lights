@@ -1,0 +1,525 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Home Lights" />
+  <meta name="theme-color" content="#f7f1e6" />
+
+  <title>Home Lights</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper: #f7f1e6;
+      --ink: #23201b;
+      --muted: #6f675b;
+      --panel: #fffaf0;
+      --line: #d8cbb8;
+      --green: #2f7d54;
+      --green-dark: #1f5d3d;
+      --amber: #f5bc45;
+      --off: #6a6f78;
+      --off-dark: #4c535c;
+      --shadow: 0 18px 42px rgba(67,50,28,0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background:
+        linear-gradient(120deg, rgba(47,125,84,0.1), transparent 34%),
+        radial-gradient(circle at 86% 8%, rgba(245,188,69,0.28), transparent 28%),
+        var(--paper);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: 'Nunito', sans-serif;
+      padding: 22px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(980px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 2px 22px;
+      border-bottom: 2px solid rgba(35,32,27,0.12);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.2rem, 7vw, 4.8rem);
+      line-height: 0.95;
+    }
+
+    .time {
+      color: var(--muted);
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      font-weight: 800;
+      text-align: right;
+      min-width: 8ch;
+    }
+
+    .section-label {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.1rem, 3vw, 1.6rem);
+      color: var(--muted);
+      margin: 28px 0 10px 2px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 22px;
+      padding: 10px 0 4px;
+    }
+
+    .light-card {
+      background: var(--panel);
+      border: 3px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-height: 300px;
+      padding: clamp(16px, 4vw, 28px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+      transition: border-color 180ms ease, background 180ms ease;
+    }
+
+    .light-card.is-on {
+      background: #fff7da;
+      border-color: #d79822;
+    }
+
+    .room-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .room-name {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .lamp {
+      width: clamp(64px, 14vw, 100px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #e5ded3;
+      color: var(--off-dark);
+      border: 3px solid rgba(35,32,27,0.12);
+      transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+      flex-shrink: 0;
+    }
+
+    .is-on .lamp {
+      background: var(--amber);
+      color: #3b2a05;
+      box-shadow: 0 0 0 12px rgba(245,188,69,0.2);
+    }
+
+    .lamp svg {
+      width: 58%;
+      height: 58%;
+    }
+
+    .state {
+      align-self: center;
+    }
+
+    .state-label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 800;
+    }
+
+    .state-value {
+      display: block;
+      font-size: clamp(3rem, 10vw, 5.5rem);
+      font-weight: 900;
+      line-height: 0.9;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action {
+      min-height: 88px;
+      border: 0;
+      border-radius: 8px;
+      color: #fffaf0;
+      cursor: pointer;
+      font-size: clamp(1.4rem, 4vw, 2.1rem);
+      font-weight: 900;
+      box-shadow: inset 0 -6px 0 rgba(0,0,0,0.18), 0 10px 22px rgba(35,32,27,0.18);
+      transition: transform 120ms ease, filter 120ms ease;
+      touch-action: manipulation;
+    }
+
+    .action:active {
+      transform: translateY(4px);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18), 0 5px 14px rgba(35,32,27,0.16);
+    }
+
+    .action-on {
+      background: var(--green);
+    }
+
+    .action-on[aria-pressed="true"] {
+      background: var(--green-dark);
+    }
+
+    .action-off {
+      background: var(--off);
+    }
+
+    .action-off[aria-pressed="true"] {
+      background: var(--off-dark);
+    }
+
+    .action[disabled] {
+      cursor: wait;
+      filter: saturate(0.55) opacity(0.75);
+    }
+
+    .status-bar {
+      min-height: 32px;
+      color: var(--muted);
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 800;
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header>
+    <h1>Home Lights</h1>
+    <div class="time" id="time"></div>
+  </header>
+
+  <!-- ENTRANCE -->
+  <div class="section-label">🚪 Entrance</div>
+  <div class="controls" id="controls-entrance"></div>
+
+  <!-- LIVING ROOM -->
+  <div class="section-label">🛋️ Living Room</div>
+  <div class="controls" id="controls-living"></div>
+
+  <!-- BEDROOM -->
+  <div class="section-label">🛏️ Bedroom</div>
+  <div class="controls" id="controls-bedroom"></div>
+
+  <div class="status-bar" id="status">Ready</div>
+
+</div>
+
+<script>
+
+  // =====================================================
+  // VOICE MONKEY TOKEN
+  // =====================================================
+
+  var VM_TOKEN = https://api-v3.voicemonkey.io/devices?token=c0b95-4b8d0-82ebe-e33d7-cb59b-3e043-ba-c09b7f2c-61df-4146-ba7a-d881b9b2a07d';
+
+
+  // =====================================================
+  // LIGHT DEFINITIONS
+  // =====================================================
+
+  var LIGHTS = [
+    {
+      key: 'entrance-light',
+      section: 'entrance',
+      label: 'Entrance',
+      monkeyOn: 'entrance-light-2cbrh',
+      monkeyOff: 'entrancelightoff-18o3o'
+    },
+    {
+      key: 'living-light-1',
+      section: 'living',
+      label: 'Living 1',
+      monkeyOn: 'living-light-1-we0xe',
+      monkeyOff: 'livinglight1off-gkkyw'
+    },
+    {
+      key: 'living-light-2',
+      section: 'living',
+      label: 'Living 2',
+      monkeyOn: 'living-light-2-tadzs',
+      monkeyOff: 'livinglight2off-jfmzg'
+    },
+    {
+      key: 'living-light-3',
+      section: 'living',
+      label: 'Living 3',
+      monkeyOn: 'living-light-3-096g7',
+      monkeyOff: 'livinglight3off-yngwq'
+    },
+    {
+      key: 'living-light-4',
+      section: 'living',
+      label: 'Living 4',
+      monkeyOn: 'living-light-4-d8mhq',
+      monkeyOff: 'livinglight4off-pxfxg'
+    },
+    {
+      key: 'living-light-5',
+      section: 'living',
+      label: 'Living 5',
+      monkeyOn: 'living-light-5-yaam6',
+      monkeyOff: 'livinglight5off-rfekf'
+    },
+    {
+      key: 'bedroom-main',
+      section: 'bedroom',
+      label: 'Main',
+      monkeyOn: 'bedroom-main-on',
+      monkeyOff: 'bedroom-main-off'
+    },
+    {
+      key: 'bedroom-bedside',
+      section: 'bedroom',
+      label: 'Bedside Lamp',
+      monkeyOn: 'bedroom-bedside-on',
+      monkeyOff: 'bedroom-bedside-off'
+    }
+  ];
+
+
+  // =====================================================
+  // APP STATE
+  // =====================================================
+
+  var state = {};
+
+  LIGHTS.forEach(function(light) {
+    state[light.key] = false;
+  });
+
+
+  // =====================================================
+  // SVG ICON
+  // =====================================================
+
+  var lampSVG =
+    '<svg viewBox="0 0 64 64" fill="none">' +
+      '<path d="M20 29c0-7 5-13 12-13s12 6 12 13c0 5-3 9-7 12v5H27v-5c-4-3-7-7-7-12Z" fill="currentColor"/>' +
+      '<path d="M27 51h10M28 57h8" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>' +
+    '</svg>';
+
+
+  // =====================================================
+  // BUILD CARDS
+  // =====================================================
+
+  LIGHTS.forEach(function(light) {
+
+    var container = document.getElementById('controls-' + light.section);
+
+    var card = document.createElement('article');
+
+    card.className = 'light-card';
+    card.id = 'card-' + light.key;
+
+    card.innerHTML =
+      '<div class="room-top">' +
+        '<div class="room-name">' + light.label + '</div>' +
+        '<div class="lamp">' + lampSVG + '</div>' +
+      '</div>' +
+
+      '<div class="state">' +
+        '<p class="state-label">Current setting</p>' +
+        '<span class="state-value" id="val-' + light.key + '">OFF</span>' +
+      '</div>' +
+
+      '<div class="actions">' +
+        '<button class="action action-on" id="btn-on-' + light.key + '" type="button" aria-pressed="false">ON</button>' +
+        '<button class="action action-off" id="btn-off-' + light.key + '" type="button" aria-pressed="true">OFF</button>' +
+      '</div>';
+
+    container.appendChild(card);
+
+    document
+      .getElementById('btn-on-' + light.key)
+      .addEventListener('click', function() {
+        runCommand(light.key, 'on');
+      });
+
+    document
+      .getElementById('btn-off-' + light.key)
+      .addEventListener('click', function() {
+        runCommand(light.key, 'off');
+      });
+  });
+
+
+  // =====================================================
+  // PAINT CARD UI
+  // =====================================================
+
+  function paint(key, isOn) {
+
+    state[key] = isOn;
+
+    var card = document.getElementById('card-' + key);
+    var val = document.getElementById('val-' + key);
+    var btnOn = document.getElementById('btn-on-' + key);
+    var btnOff = document.getElementById('btn-off-' + key);
+
+    card.classList.toggle('is-on', isOn);
+
+    val.textContent = isOn ? 'ON' : 'OFF';
+
+    btnOn.setAttribute('aria-pressed', String(isOn));
+    btnOff.setAttribute('aria-pressed', String(!isOn));
+  }
+
+
+  // =====================================================
+  // SET BUSY STATE
+  // =====================================================
+
+  function setBusy(busy) {
+    document.querySelectorAll('button').forEach(function(button) {
+      button.disabled = busy;
+    });
+  }
+
+
+  // =====================================================
+  // SEND TO VOICE MONKEY
+  // =====================================================
+
+function sendToMonkey(key, action) {
+
+  return new Promise(function(resolve, reject) {
+
+    var light = LIGHTS.find(function(l) {
+      return l.key === key;
+    });
+
+    var device =
+      action === 'on'
+        ? light.monkeyOn
+        : light.monkeyOff;
+
+    var url =
+      'https://api-v3.voicemonkey.io/trigger' +
+      '?token=' + encodeURIComponent(VM_TOKEN) +
+      '&device=' + encodeURIComponent(device);
+
+    console.log(url);
+
+    fetch(url, {
+      method: 'GET',
+      mode: 'no-cors'
+    })
+    .then(function() {
+      resolve();
+    })
+    .catch(function(err) {
+      reject(err);
+    });
+
+  });
+}
+  // =====================================================
+  // RUN COMMAND
+  // =====================================================
+
+  function runCommand(key, action) {
+
+    var previousState = state[key];
+
+    paint(key, action === 'on');
+
+    var light = LIGHTS.find(function(l) {
+      return l.key === key;
+    });
+
+    document.getElementById('status').textContent =
+      light.label + ' turning ' + action.toUpperCase() + '...';
+
+    setBusy(true);
+
+    sendToMonkey(key, action)
+
+      .then(function() {
+
+        document.getElementById('status').textContent =
+          light.label + ' is now ' + action.toUpperCase();
+      })
+
+      .catch(function(error) {
+
+        paint(key, previousState);
+
+        document.getElementById('status').textContent = error.message;
+
+        console.error(error);
+      })
+
+      .finally(function() {
+        setBusy(false);
+      });
+  }
+
+
+  // =====================================================
+  // CLOCK
+  // =====================================================
+
+  function updateTime() {
+
+    document.getElementById('time').textContent =
+      new Date().toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+  }
+
+  updateTime();
+
+  setInterval(updateTime, 30000);
+
+</script>
+
+</body>
+</html>
